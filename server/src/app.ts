@@ -5,6 +5,8 @@ import config from "config";
 import { connect } from "./utils/connect";
 import { log } from "./utils/logger";
 import { routes } from "./routes/routes";
+import { errorMiddleware } from "./middlewares/zod.middleware";
+import { notFoundMiddleware } from "./middlewares/notFoundMiddleware";
 
 const app: Application = express();
 
@@ -18,6 +20,10 @@ const startServer = async () => {
   try {
     await connect();
     routes(app);
+
+    app.use(notFoundMiddleware);
+
+    app.use(errorMiddleware);
 
     app.listen(PORT, () => {
       log.info(`Server is running on port ${PORT}`);
