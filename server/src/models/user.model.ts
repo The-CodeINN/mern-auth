@@ -3,18 +3,18 @@ import bcrypt from "bcrypt";
 import config from "config";
 
 // Define the interface for user input
-export interface IUserInput {
+export type IUserInput = {
   email: string;
   name: string;
   password: string;
 }
 
 // Define the interface for the full user document
-export interface IUser extends IUserInput, mongoose.Document {
+export type IUser = {
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
-}
+} & IUserInput & mongoose.Document
 
 // Define the user schema
 const userSchema = new mongoose.Schema<IUser>(
@@ -43,7 +43,7 @@ userSchema.pre("save", async function (next) {
   let user = this as IUser;
 
   if (!user.isModified("password")) {
-    return next();
+    next(); return;
   }
 
   const salt = await bcrypt.genSalt(config.get<number>("saltWorkFactor"));
@@ -51,7 +51,7 @@ userSchema.pre("save", async function (next) {
 
   user.password = hash;
 
-  return next();
+  next();
 });
 
 userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
@@ -60,6 +60,6 @@ userSchema.methods.comparePassword = async function (candidatePassword: string):
   return bcrypt.compare(candidatePassword, user.password).catch((_e) => false);
 };
 
-const User = mongoose.model<IUser>("User", userSchema);
+const UserModel = mongoose.model<IUser>("User", userSchema);
 
-export default User;
+export { UserModel };

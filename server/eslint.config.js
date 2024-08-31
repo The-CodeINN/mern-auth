@@ -37,19 +37,6 @@ module.exports = [
         },
       ],
       "no-restricted-exports": "off",
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            "../*", // Restrict all parent directory imports by default
-            {
-              group: ["../models/*", "../services/*"],
-              message:
-                "Avoid using parent directory imports outside allowed folders (e.g., models, services).",
-            },
-          ],
-        },
-      ],
       eqeqeq: "error",
       "no-unneeded-ternary": "error",
       "@typescript-eslint/consistent-type-imports": [

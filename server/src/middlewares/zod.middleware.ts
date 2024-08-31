@@ -1,4 +1,4 @@
-import { ApiResponse, createErrorResponse } from "$/utils/apiResponse";
+import { type ApiResponse, createErrorResponse } from "$/utils/apiResponse";
 import { z } from "zod";
 import { type NextFunction, type Request, type Response } from "express";
 

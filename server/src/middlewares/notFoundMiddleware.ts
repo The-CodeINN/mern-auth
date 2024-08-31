@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { type Request, type Response, type NextFunction } from "express";
 import { createErrorResponse } from "$/utils/apiResponse";
 
 export function notFoundMiddleware(req: Request, res: Response, next: NextFunction) {
