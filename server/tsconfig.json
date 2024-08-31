@@ -3,29 +3,23 @@
     "require": ["tsconfig-paths/register"]
   },
   "compilerOptions": {
-    // Base Options recommended for all projects
     "esModuleInterop": true,
     "skipLibCheck": true,
     "target": "es2022",
     "allowJs": true,
     "resolveJsonModule": true,
     "moduleDetection": "force",
-    "isolatedModules": true,
-    "verbatimModuleSyntax": false,
+    "isolatedModules": false,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    // Enable strict type checking so you can catch bugs early
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    // Transpile our TypeScript code to JavaScript
     "module": "NodeNext",
     "outDir": "./dist",
-    "rootDir": "./src",
-    // Emit type declarations
+    "rootDir": ".",
     "declaration": true,
-    // Emit source maps and enable the composite option for monorepos
     "composite": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -34,7 +28,6 @@
       "$/*": ["./src/*"]
     }
   },
-  // Include the necessary files for your project
-  "include": ["./*.js", "src/**/*.ts", "test/**/*.ts"],
+  "include": ["./*.js", "src/**/*.ts", "test/**/*.ts", "config/**/*.ts"],
   "exclude": ["node_modules"]
 }

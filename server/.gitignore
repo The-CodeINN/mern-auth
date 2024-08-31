@@ -4,3 +4,4 @@ build
 .env
 vs
 .vscode
+./config/default.ts
