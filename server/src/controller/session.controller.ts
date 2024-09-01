@@ -1,4 +1,4 @@
-import { createSession, findSessions } from "$/service/session.service";
+import { createSession, findSessions, updateSession } from "$/service/session.service";
 import { validatePassword } from "$/service/user.service";
 import { type Request, type Response, type NextFunction } from "express";
 import { createErrorResponse, createSuccessResponse } from "$/utils/apiResponse";
@@ -7,10 +7,22 @@ import { signJwt } from "$/utils/jwt.utils";
 import config from "config";
 import { log } from "$/utils/logger";
 
-export async function createSessionHandler(req: Request, res: Response, next: NextFunction) {
+type CreateSessionRequest = {
+  body: {
+    email: string;
+    password: string;
+  };
+} & Request;
+
+export async function createSessionHandler(
+  req: CreateSessionRequest,
+  res: Response,
+  next: NextFunction
+) {
   try {
     // Validate the user's password
-    const user = await validatePassword(req.body.email, req.body.password);
+    const { email, password } = req.body as { email: string; password: string };
+    const user = await validatePassword(email, password);
     if (!user) {
       return res.status(401).json(createErrorResponse("Invalid username or password"));
     }
@@ -62,11 +74,25 @@ export async function createSessionHandler(req: Request, res: Response, next: Ne
 
 export async function getUserSessionHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = res.locals.user._id;
+    const user = res.locals.user as { _id: Types.ObjectId };
+    const userId: Types.ObjectId = user._id;
 
     const sessions = await findSessions({ user: userId, valid: true });
 
     return res.status(200).json(createSuccessResponse(sessions, "Sessions retrieved successfully"));
+  } catch (error) {
+    log.error(error);
+    next(error);
+    return;
+  }
+}
+
+export async function deleteSessionHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = res.locals.user as { session: Types.ObjectId };
+    const sessionId = user.session;
+
+    await updateSession({ _id: sessionId }, { valid: false });
   } catch (error) {
     log.error(error);
     next(error);

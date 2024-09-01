@@ -30,7 +30,6 @@ export const routes = (app: Application) => {
   );
 
   app.get("/api/sessions", requireUser, (req: Request, res: Response, next: NextFunction) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     getUserSessionHandler(req, res, next).catch(next);
   });
 };

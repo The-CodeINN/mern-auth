@@ -7,14 +7,15 @@ export type IUserInput = {
   email: string;
   name: string;
   password: string;
-}
+};
 
 // Define the interface for the full user document
 export type IUser = {
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
-} & IUserInput & mongoose.Document
+} & IUserInput &
+  mongoose.Document;
 
 // Define the user schema
 const userSchema = new mongoose.Schema<IUser>(
@@ -43,7 +44,8 @@ userSchema.pre("save", async function (next) {
   let user = this as IUser;
 
   if (!user.isModified("password")) {
-    next(); return;
+    next();
+    return;
   }
 
   const salt = await bcrypt.genSalt(config.get<number>("saltWorkFactor"));

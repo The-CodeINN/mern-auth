@@ -13,7 +13,6 @@ export const deSerializeUser = (req: Request, res: Response, next: NextFunction)
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const { valid, decoded } = verifyJwt(accessToken);
 
     if (valid && decoded) {

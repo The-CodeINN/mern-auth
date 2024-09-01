@@ -1,5 +1,5 @@
 import { type ISessionInput, SessionModel } from "$/models/session.model";
-import { type FilterQuery } from "mongoose";
+import { type UpdateQuery, type FilterQuery } from "mongoose";
 
 export async function createSession(input: ISessionInput) {
   try {
@@ -34,6 +34,22 @@ export async function findSessions(query: FilterQuery<ISessionInput>) {
   try {
     const sessions = await SessionModel.find(query).lean();
     return sessions;
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new Error(e.message);
+    } else {
+      throw new Error(String(e));
+    }
+  }
+}
+
+export async function updateSession(
+  query: FilterQuery<ISessionInput>,
+  update: UpdateQuery<ISessionInput>
+) {
+  try {
+    const session = await SessionModel.updateOne(query, update);
+    return session;
   } catch (e) {
     if (e instanceof Error) {
       throw new Error(e.message);

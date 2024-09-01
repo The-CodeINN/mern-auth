@@ -3,7 +3,7 @@ export type ApiResponse<T> = {
   data?: T;
   message: string;
   errors?: Record<string, unknown>;
-}
+};
 
 export function createSuccessResponse<T>(data: T, message: string): ApiResponse<T> {
   return {
