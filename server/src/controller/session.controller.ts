@@ -30,7 +30,7 @@ export async function createSessionHandler(
     // Create a new session
     const session = await createSession({
       user: user._id as Types.ObjectId,
-      userAgent: req.get("user-agent") || "",
+      userAgent: req.get("user-agent") ?? "",
     });
 
     // create access token
