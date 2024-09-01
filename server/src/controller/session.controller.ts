@@ -1,4 +1,4 @@
-import { createSession } from "$/service/session.service";
+import { createSession, findSessions } from "$/service/session.service";
 import { validatePassword } from "$/service/user.service";
 import { type Request, type Response, type NextFunction } from "express";
 import { createErrorResponse, createSuccessResponse } from "$/utils/apiResponse";
@@ -53,6 +53,20 @@ export async function createSessionHandler(req: Request, res: Response, next: Ne
         "Session created successfully"
       )
     );
+  } catch (error) {
+    log.error(error);
+    next(error);
+    return;
+  }
+}
+
+export async function getUserSessionHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = res.locals.user._id;
+
+    const sessions = await findSessions({ user: userId, valid: true });
+
+    return res.status(200).json(createSuccessResponse(sessions, "Sessions retrieved successfully"));
   } catch (error) {
     log.error(error);
     next(error);

@@ -1,4 +1,5 @@
 import { type ISessionInput, SessionModel } from "$/models/session.model";
+import { type FilterQuery } from "mongoose";
 
 export async function createSession(input: ISessionInput) {
   try {
@@ -20,6 +21,19 @@ export async function createSession(input: ISessionInput) {
     // Create a new session since no valid session exists
     const session = await SessionModel.create(input);
     return session.toJSON();
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new Error(e.message);
+    } else {
+      throw new Error(String(e));
+    }
+  }
+}
+
+export async function findSessions(query: FilterQuery<ISessionInput>) {
+  try {
+    const sessions = await SessionModel.find(query).lean();
+    return sessions;
   } catch (e) {
     if (e instanceof Error) {
       throw new Error(e.message);

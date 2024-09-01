@@ -4,13 +4,13 @@ import mongoose, { Schema, type Document, type Types } from "mongoose";
 export type ISessionInput = {
   user: Types.ObjectId; // Reference to User model
   userAgent: string;
+  valid?: boolean;
 };
 
 // Define the interface for the full session document
 export type ISession = {
   createdAt: Date;
   updatedAt: Date;
-  valid: boolean;
 } & ISessionInput &
   Document;
 
