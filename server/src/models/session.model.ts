@@ -1,25 +1,22 @@
 import mongoose, { Schema, type Document, type Types } from "mongoose";
 
-// Define the interface for session input
 export type ISessionInput = {
-  user: Types.ObjectId; // Reference to User model
+  user: Types.ObjectId;
   userAgent: string;
   valid?: boolean;
 };
 
-// Define the interface for the full session document
 export type ISession = {
   createdAt: Date;
   updatedAt: Date;
 } & ISessionInput &
   Document;
 
-// Define the session schema
-const sessionSchema = new Schema<ISession>(
+const sessionSchema = new Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model
+      ref: "User",
       required: true,
     },
     valid: {
@@ -35,9 +32,9 @@ const sessionSchema = new Schema<ISession>(
   }
 );
 
-// Create a unique index on user and userAgent to prevent multiple sessions from the same user agent
+// Remove the unique index
 sessionSchema.index({ user: 1, userAgent: 1 }, { unique: true });
 
-const SessionModel = mongoose.model<ISession>("Session", sessionSchema);
+const SessionModel = mongoose.model("Session", sessionSchema);
 
 export { SessionModel };

@@ -1,3 +1,4 @@
+import { type FilterQuery } from "mongoose";
 import { type IUserInput, UserModel } from "../models/user.model";
 import { omit } from "lodash";
 
@@ -25,6 +26,19 @@ export async function validatePassword(email: string, password: string) {
       throw new Error("Invalid password");
     }
     return omit(user.toJSON(), "password");
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new Error(e.message);
+    } else {
+      throw new Error(String(e));
+    }
+  }
+}
+
+export async function findUser(query: FilterQuery<IUserInput>) {
+  try {
+    const user = await UserModel.findOne(query).lean();
+    return user;
   } catch (e) {
     if (e instanceof Error) {
       throw new Error(e.message);

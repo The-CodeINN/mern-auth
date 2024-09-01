@@ -14,88 +14,69 @@ type CreateSessionRequest = {
   };
 } & Request;
 
-export async function createSessionHandler(
+export function createSessionHandler(
   req: CreateSessionRequest,
   res: Response,
   next: NextFunction
-) {
-  try {
-    // Validate the user's password
-    const { email, password } = req.body as { email: string; password: string };
-    const user = await validatePassword(email, password);
-    if (!user) {
-      return res.status(401).json(createErrorResponse("Invalid username or password"));
-    }
-
-    // Create a new session
-    const session = await createSession({
-      user: user._id as Types.ObjectId,
-      userAgent: req.get("user-agent") ?? "",
+): void {
+  const { email, password }: { email: string; password: string } = req.body as {
+    email: string;
+    password: string;
+  };
+  validatePassword(email, password)
+    .then((user) => {
+      if (!user) {
+        return res.status(401).json(createErrorResponse("Invalid username or password"));
+      }
+      return createSession({
+        user: user._id as Types.ObjectId,
+        userAgent: req.get("user-agent") ?? "",
+      }).then((session) => {
+        const accessToken = signJwt(
+          { ...user, session: session._id },
+          { expiresIn: config.get("accessTokenTtl") }
+        );
+        const refreshToken = signJwt(
+          { ...user, session: session._id },
+          { expiresIn: config.get("refreshTokenTtl") }
+        );
+        return res
+          .status(201)
+          .json(
+            createSuccessResponse({ accessToken, refreshToken }, "Session created successfully")
+          );
+      });
+    })
+    .catch((error) => {
+      log.error(error);
+      next(error);
     });
-
-    // create access token
-    const accessToken = signJwt(
-      {
-        ...user,
-        session: session._id,
-      },
-      {
-        expiresIn: config.get("accessTokenTtl"), // 15 minutes
-      }
-    );
-
-    // create refresh token
-    const refreshToken = signJwt(
-      {
-        ...user,
-        session: session._id,
-      },
-      {
-        expiresIn: config.get("refreshTokenTtl"), // 1 year
-      }
-    );
-
-    // Return the session and refresh token
-    return res.status(201).json(
-      createSuccessResponse(
-        {
-          accessToken,
-          refreshToken,
-        },
-        "Session created successfully"
-      )
-    );
-  } catch (error) {
-    log.error(error);
-    next(error);
-    return;
-  }
 }
 
-export async function getUserSessionHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    const user = res.locals.user as { _id: Types.ObjectId };
-    const userId: Types.ObjectId = user._id;
-
-    const sessions = await findSessions({ user: userId, valid: true });
-
-    return res.status(200).json(createSuccessResponse(sessions, "Sessions retrieved successfully"));
-  } catch (error) {
-    log.error(error);
-    next(error);
-    return;
-  }
+export function getUserSessionHandler(req: Request, res: Response, next: NextFunction): void {
+  const user = res.locals.user as { _id: Types.ObjectId };
+  findSessions({ user: user._id, valid: true })
+    .then((sessions) => {
+      res.status(200).json(createSuccessResponse(sessions, "Sessions retrieved successfully"));
+    })
+    .catch((error) => {
+      log.error(error);
+      next(error);
+    });
 }
 
-export async function deleteSessionHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    const user = res.locals.user as { session: Types.ObjectId };
-    const sessionId = user.session;
-
-    await updateSession({ _id: sessionId }, { valid: false });
-  } catch (error) {
-    log.error(error);
-    next(error);
-    return;
-  }
+export function deleteSessionHandler(req: Request, res: Response, next: NextFunction): void {
+  const user = res.locals.user as { session: Types.ObjectId };
+  updateSession({ _id: user.session }, { valid: false })
+    .then((result) => {
+      if (result.modifiedCount > 0) {
+        res.status(200).json(createSuccessResponse(null, "Session deleted successfully"));
+      } else {
+        res.status(404).json(createErrorResponse("Session not found or already invalid"));
+      }
+    })
+    .catch((error) => {
+      log.error(error);
+      next(error);
+    });
 }

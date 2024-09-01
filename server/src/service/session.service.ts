@@ -1,24 +1,22 @@
+import { get } from "lodash";
+import config from "config";
 import { type ISessionInput, SessionModel } from "$/models/session.model";
+import { signJwt, verifyJwt } from "$/utils/jwt.utils";
 import { type UpdateQuery, type FilterQuery } from "mongoose";
+import { findUser } from "./user.service";
 
 export async function createSession(input: ISessionInput) {
   try {
-    // Check for existing valid session for the same user and user agent
     const existingSession = await SessionModel.findOne({
       user: input.user,
       userAgent: input.userAgent,
       valid: true,
-    });
+    }).lean();
 
     if (existingSession) {
-      // Invalidate the existing session if needed
-      // await SessionModel.updateOne({ _id: existingSession._id }, { valid: false });
-
-      // Or simply return the existing session and do not create a new one
-      return existingSession.toJSON();
+      return existingSession;
     }
 
-    // Create a new session since no valid session exists
     const session = await SessionModel.create(input);
     return session.toJSON();
   } catch (e) {
@@ -50,6 +48,43 @@ export async function updateSession(
   try {
     const session = await SessionModel.updateOne(query, update);
     return session;
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new Error(e.message);
+    } else {
+      throw new Error(String(e));
+    }
+  }
+}
+
+export async function reIssueAccessToken(refreshToken: string) {
+  try {
+    const { decoded } = verifyJwt(refreshToken);
+
+    if (!decoded || !get(decoded, "session")) {
+      return false;
+    }
+
+    const session = await SessionModel.findById(get(decoded, "session"));
+
+    if (!session || !session.valid) return false;
+
+    const user = await findUser({ _id: session.user });
+
+    if (!user) return false;
+
+    // create access token
+    const accessToken = signJwt(
+      {
+        ...user,
+        session: session._id,
+      },
+      {
+        expiresIn: config.get("accessTokenTtl"), // 15 minutes
+      }
+    );
+
+    return accessToken;
   } catch (e) {
     if (e instanceof Error) {
       throw new Error(e.message);

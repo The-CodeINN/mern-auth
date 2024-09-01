@@ -9,22 +9,21 @@ type UserDocument = {
   toJSON(): Record<string, unknown>;
 };
 
-export async function createUserHandler(
+export function createUserHandler(
   req: Request<object, object, CreateUserInput>,
   res: Response,
   next: NextFunction
-): Promise<void> {
-  try {
-    const user = (await createUser(req.body)) as UserDocument;
-
-    if (!user || typeof user.toJSON !== "function") {
-      throw new Error("Invalid user object returned from createUser");
-    }
-
-    const userWithoutPassword = omit(user.toJSON(), "password");
-    res.status(201).send(createSuccessResponse(userWithoutPassword, "User created successfully"));
-  } catch (e) {
-    log.error(e);
-    next(e);
-  }
+): void {
+  createUser(req.body)
+    .then((user: UserDocument) => {
+      if (!user || typeof user.toJSON !== "function") {
+        throw new Error("Invalid user object returned from createUser");
+      }
+      const userWithoutPassword = omit(user.toJSON(), "password");
+      res.status(201).send(createSuccessResponse(userWithoutPassword, "User created successfully"));
+    })
+    .catch((e) => {
+      log.error(e);
+      next(e);
+    });
 }
