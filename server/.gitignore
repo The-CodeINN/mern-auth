@@ -1,7 +1,0 @@
-node_modules
-.DS_Store
-build
-.env
-vs
-.vscode
-config/default.ts
