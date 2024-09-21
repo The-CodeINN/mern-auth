@@ -34,11 +34,14 @@ const registerSchema = loginSchema
     path: ['confirmPassword'],
   });
 
+const verifyEmailSchema = z.string().min(1).max(24);
+
 export type RegisterInput = Omit<
   z.infer<typeof registerSchema>,
   'confirmPassword'
 >;
 
 export type LoginInput = z.infer<typeof loginSchema>;
+export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 
-export { registerSchema, loginSchema };
+export { registerSchema, loginSchema, verifyEmailSchema };
