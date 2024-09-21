@@ -4,11 +4,16 @@ import { SessionModel } from '../models/session.model';
 import { UserModel } from '../models/user.model';
 import { VerificationCodeModel } from '../models/verificationCode.model';
 import { RegisterInput } from '../schema';
-import { oneDayFromNow } from '../utils/date';
+import { ONE_DAY_MS, oneDayFromNow, sevenDaysFromNow } from '../utils/date';
 import { JWT_REFRESH_SECRET, JWT_SECRET } from '../constants/env';
 import { appAssert } from '../utils/appAssert';
 import { CONFLICT, UNAUTHORIZED } from '../constants/http';
-import { refreshTokenSignOptions, signToken } from '../utils/jwt';
+import {
+  RefreshTokenPayload,
+  refreshTokenSignOptions,
+  signToken,
+  verifyToken,
+} from '../utils/jwt';
 
 export const createAccount = async (data: RegisterInput) => {
   // verify email is not already in use
@@ -94,5 +99,49 @@ export const loginUser = async (data: RegisterInput) => {
     user: user.omitPassword(),
     accessToken,
     refreshToken,
+  };
+};
+
+export const refreshUserAccessToken = async (refreshToken: string) => {
+  //verify the refresh token
+  const { payload } = verifyToken<RefreshTokenPayload>(refreshToken, {
+    secret: refreshTokenSignOptions.secret,
+  });
+
+  appAssert(payload, UNAUTHORIZED, 'Invalid refresh token');
+
+  // get the session
+  const session = await SessionModel.findById(payload.sessionId);
+  const now = Date.now();
+  appAssert(
+    session && session.expiresAt.getTime() > now,
+    UNAUTHORIZED,
+    'Session expired'
+  );
+
+  // refresh the session if it's within 24 hours of expiring
+  const sessionNeedsRefresh = session.expiresAt.getTime() - now <= ONE_DAY_MS;
+  if (sessionNeedsRefresh) {
+    session.expiresAt = sevenDaysFromNow();
+    await session.save();
+  }
+
+  const newRefreshToken = sessionNeedsRefresh
+    ? signToken(
+        {
+          sessionId: session._id,
+        },
+        refreshTokenSignOptions
+      )
+    : undefined;
+
+  const accessToken = signToken({
+    userId: session.userId,
+    sessionId: session._id,
+  });
+
+  return {
+    accessToken,
+    newRefreshToken,
   };
 };
