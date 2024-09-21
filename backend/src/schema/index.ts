@@ -1,27 +1,33 @@
 import { z } from 'zod';
 
-const registerSchema = z
-  .object({
-    email: z
-      .string({
-        required_error: 'Email is required',
-      })
-      .email()
-      .min(5)
-      .max(255),
-    password: z
-      .string({
-        required_error: 'Password is required',
-      })
-      .min(6)
-      .max(255),
+const emailSchema = z
+  .string({
+    required_error: 'Email is required',
+  })
+  .email()
+  .min(5)
+  .max(255);
+const passwordSchema = z
+  .string({
+    required_error: 'Password is required',
+  })
+  .min(6)
+  .max(255);
+
+const loginSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+  userAgent: z.string().optional(),
+});
+
+const registerSchema = loginSchema
+  .extend({
     confirmPassword: z
       .string({
         required_error: 'Confirm Password is required',
       })
       .min(6)
       .max(255),
-    userAgent: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
@@ -33,4 +39,6 @@ export type RegisterInput = Omit<
   'confirmPassword'
 >;
 
-export { registerSchema };
+export type LoginInput = z.infer<typeof loginSchema>;
+
+export { registerSchema, loginSchema };
