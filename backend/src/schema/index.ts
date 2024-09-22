@@ -34,7 +34,12 @@ const registerSchema = loginSchema
     path: ['confirmPassword'],
   });
 
-const verifyEmailSchema = z.string().min(1).max(24);
+const verificationCodeSchema = z.string().min(1).max(24);
+
+const resetPasswordSchema = z.object({
+  password: passwordSchema,
+  verificationCode: verificationCodeSchema,
+});
 
 export type RegisterInput = Omit<
   z.infer<typeof registerSchema>,
@@ -42,6 +47,12 @@ export type RegisterInput = Omit<
 >;
 
 export type LoginInput = z.infer<typeof loginSchema>;
-export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type VerificationCodeInput = z.infer<typeof verificationCodeSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
-export { registerSchema, loginSchema, verifyEmailSchema };
+export {
+  registerSchema,
+  loginSchema,
+  verificationCodeSchema,
+  resetPasswordSchema,
+};

@@ -3,7 +3,11 @@ import { verificationCodeTypes } from '../constants/verificationCodeTypes';
 import { SessionModel } from '../models/session.model';
 import { UserModel } from '../models/user.model';
 import { VerificationCodeModel } from '../models/verificationCode.model';
-import { RegisterInput } from '../schema';
+import {
+  RegisterInput,
+  ResetPasswordInput,
+  VerificationCodeInput,
+} from '../schema';
 import {
   fiveMinutesAgo,
   ONE_DAY_MS,
@@ -31,6 +35,7 @@ import {
   getPasswordResetTemplate,
   getVerifyEmailTemplate,
 } from '../utils/emailTemplate';
+import { hashValue } from '../utils/bcrypt';
 
 export const createAccount = async (data: RegisterInput) => {
   // verify email is not already in use
@@ -174,7 +179,7 @@ export const refreshUserAccessToken = async (refreshToken: string) => {
   };
 };
 
-export const verifyEmail = async (code: string) => {
+export const verifyEmail = async (code: VerificationCodeInput) => {
   // get the verification code
   const validCode = await VerificationCodeModel.findOne({
     _id: code,
@@ -249,4 +254,30 @@ export const sendPasswordResetEmail = async (email: string) => {
     console.log('SendPasswordResetError:', error.message);
     return {};
   }
+};
+
+export const resetPassword = async (data: ResetPasswordInput) => {
+  // get the verification code
+  const validCode = await VerificationCodeModel.findOne({
+    _id: data.verificationCode,
+    type: verificationCodeTypes.PasswordReset,
+    expiresAt: { $gt: new Date() },
+  });
+  appAssert(validCode, NOT_FOUND, 'Invalid or expired verification code');
+
+  // update user password
+  const updatedUser = await UserModel.findByIdAndUpdate(validCode.userId, {
+    password: await hashValue(data.password),
+  });
+  appAssert(updatedUser, INTERNAL_SERVER_ERROR, 'Failed to reset password');
+
+  //delete verification code
+  await validCode.deleteOne();
+  // delete all sessions
+  await SessionModel.deleteMany({ userId: validCode.userId });
+
+  // return user
+  return {
+    user: updatedUser.omitPassword(),
+  };
 };

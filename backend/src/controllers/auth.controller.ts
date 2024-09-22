@@ -4,12 +4,14 @@ import {
   emailSchema,
   loginSchema,
   registerSchema,
-  verifyEmailSchema,
+  resetPasswordSchema,
+  verificationCodeSchema,
 } from '../schema';
 import {
   createAccount,
   loginUser,
   refreshUserAccessToken,
+  resetPassword,
   sendPasswordResetEmail,
   verifyEmail,
 } from '../services/auth.service';
@@ -88,7 +90,7 @@ export const refreshHandler = catchErrors(async (req, res) => {
 });
 
 export const verifyEmailHandler = catchErrors(async (req, res) => {
-  const verificationCode = verifyEmailSchema.parse(req.params.code);
+  const verificationCode = verificationCodeSchema.parse(req.params.code);
 
   // call service
   await verifyEmail(verificationCode);
@@ -103,4 +105,16 @@ export const sendPasswordHandler = catchErrors(async (req, res) => {
   await sendPasswordResetEmail(email);
 
   return res.status(OK).json({ message: 'Password reset email sent' });
+});
+
+export const resetPasswordHandler = catchErrors(async (req, res) => {
+  const request = resetPasswordSchema.parse(req.body);
+
+  // call service
+  await resetPassword(request);
+
+  // return response
+  return clearAuthCookies(res)
+    .status(OK)
+    .json({ message: 'Password reset successfully' });
 });
