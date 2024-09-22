@@ -1,10 +1,16 @@
 import { CREATED, OK, UNAUTHORIZED } from '../constants/http';
 import { SessionModel } from '../models/session.model';
-import { loginSchema, registerSchema, verifyEmailSchema } from '../schema';
+import {
+  emailSchema,
+  loginSchema,
+  registerSchema,
+  verifyEmailSchema,
+} from '../schema';
 import {
   createAccount,
   loginUser,
   refreshUserAccessToken,
+  sendPasswordResetEmail,
   verifyEmail,
 } from '../services/auth.service';
 import { appAssert } from '../utils/appAssert';
@@ -89,4 +95,12 @@ export const verifyEmailHandler = catchErrors(async (req, res) => {
 
   // return response
   return res.status(OK).json({ message: 'Email verified' });
+});
+
+export const sendPasswordHandler = catchErrors(async (req, res) => {
+  const email = emailSchema.parse(req.body.email);
+
+  await sendPasswordResetEmail(email);
+
+  return res.status(OK).json({ message: 'Password reset email sent' });
 });
