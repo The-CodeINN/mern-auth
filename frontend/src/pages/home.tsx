@@ -17,6 +17,7 @@ import { motion } from 'framer-motion';
 import { FaLock, FaReact, FaDatabase, FaServer } from 'react-icons/fa';
 import { IoMdMail } from 'react-icons/io';
 import { IconType } from 'react-icons';
+import { Link } from 'react-router-dom';
 
 interface FeatureProps {
   title: string;
@@ -106,29 +107,33 @@ const LandingPage: React.FC = () => {
             Express, MongoDB, and React with Chakra UI and React Query.
           </Text>
           <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
-            <Button
-              as={motion.button}
-              {...buttonAnimation}
-              rounded={'full'}
-              size={'lg'}
-              fontWeight={'normal'}
-              px={6}
-              colorScheme={'blue'}
-              bg={'blue.400'}
-              _hover={{ bg: 'blue.500' }}
-            >
-              Get Started
-            </Button>
-            <Button
-              as={motion.button}
-              {...buttonAnimation}
-              rounded={'full'}
-              size={'lg'}
-              fontWeight={'normal'}
-              px={6}
-            >
-              Learn More
-            </Button>
+            <Link to='/register'>
+              <Button
+                as={motion.button}
+                {...buttonAnimation}
+                rounded={'full'}
+                size={'lg'}
+                fontWeight={'normal'}
+                px={6}
+                colorScheme={'blue'}
+                bg={'blue.400'}
+                _hover={{ bg: 'blue.500' }}
+              >
+                Get Started
+              </Button>
+            </Link>
+            <Link to='https://github.com/The-CodeINN/mern-auth'>
+              <Button
+                as={motion.button}
+                {...buttonAnimation}
+                rounded={'full'}
+                size={'lg'}
+                fontWeight={'normal'}
+                px={6}
+              >
+                Learn More
+              </Button>
+            </Link>
           </Stack>
         </Flex>
       </Container>
@@ -225,29 +230,33 @@ const LandingPage: React.FC = () => {
               alignSelf={'center'}
               position={'relative'}
             >
-              <Button
-                as={motion.button}
-                {...buttonAnimation}
-                colorScheme={'blue'}
-                bg={'blue.400'}
-                rounded={'full'}
-                px={6}
-                _hover={{
-                  bg: 'blue.500',
-                }}
-                size={'lg'}
-              >
-                Download Template
-              </Button>
-              <Button
-                as={motion.button}
-                {...buttonAnimation}
-                variant={'link'}
-                colorScheme={'blue'}
-                size={'lg'}
-              >
-                View Documentation
-              </Button>
+              <Link to='https://github.com/The-CodeINN/mern-auth'>
+                <Button
+                  as={motion.button}
+                  {...buttonAnimation}
+                  colorScheme={'blue'}
+                  bg={'blue.400'}
+                  rounded={'full'}
+                  px={6}
+                  _hover={{
+                    bg: 'blue.500',
+                  }}
+                  size={'lg'}
+                >
+                  Download Template
+                </Button>
+              </Link>
+              <Link to='https://github.com/The-CodeINN/mern-auth'>
+                <Button
+                  as={motion.button}
+                  {...buttonAnimation}
+                  variant={'link'}
+                  colorScheme={'blue'}
+                  size={'lg'}
+                >
+                  View Documentation
+                </Button>
+              </Link>
             </Stack>
           </Stack>
         </Container>
