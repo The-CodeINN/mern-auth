@@ -1,24 +1,41 @@
+import React from 'react';
 import {
-  Box,
-  Button,
   Container,
   Flex,
-  FormControl,
-  FormLabel,
   Heading,
-  Input,
-  Stack,
+  Box,
   Link as ChakraLink,
   Text,
+  VStack,
 } from '@chakra-ui/react';
 import { useMutation } from '@tanstack/react-query';
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../lib/service';
+import ReusableForm, { FieldProps } from '../components/form';
 
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+const loginFields: FieldProps[] = [
+  {
+    name: 'email',
+    label: 'Email address',
+    type: 'email',
+    placeholder: 'Enter your email',
+    required: true,
+  },
+  {
+    name: 'password',
+    label: 'Password',
+    type: 'password',
+    placeholder: 'Enter your password',
+    required: true,
+  },
+];
+
+const Login: React.FC = () => {
   const navigate = useNavigate();
 
   const {
@@ -26,7 +43,7 @@ const Login = () => {
     error,
     isPending,
     isError,
-  } = useMutation({
+  } = useMutation<unknown, Error, LoginFormData>({
     mutationFn: login,
     onSuccess: () => {
       navigate('/dashboard', { replace: true });
@@ -35,64 +52,36 @@ const Login = () => {
 
   return (
     <Flex minH='100vh' align='center' justify='center'>
-      <Container maxW='md' mx='auto' px={8} textAlign='center'>
-        <Heading mb={8} fontSize='4xl'>
-          Sign in to your account
-        </Heading>
-        <Box rounded={'lg'} bg='gray.700' boxShadow='lg' p={8}>
-          {isError && (
-            <Box color='red.400' mb={3}>
-              {error.message}
-            </Box>
-          )}
-          <Stack spacing={4}>
-            <FormControl id='email'>
-              <FormLabel>Email address</FormLabel>
-              <Input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoFocus
-                type='email'
-                placeholder='Email address'
-              />
-            </FormControl>
-            <FormControl id='password'>
-              <FormLabel>Password</FormLabel>
-              <Input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                type='password'
-                placeholder='Password'
-                onKeyDown={(e) =>
-                  e.key === 'Enter' && loginMutation({ email, password })
-                }
-              />
-            </FormControl>
-            <ChakraLink
-              as={Link}
-              to='/forgot-password'
-              fontSize='sm'
-              textAlign={{ base: 'center', sm: 'right' }}
-            >
-              Forgot password?
-            </ChakraLink>
-            <Button
-              my={2}
-              isDisabled={!email || password.length < 6}
+      <Container maxW='md' mx='auto' px={8}>
+        <VStack spacing={8} align='stretch'>
+          <Heading fontSize='4xl' textAlign='center'>
+            Sign in to your account
+          </Heading>
+          <Box rounded='lg' bg='gray.700' boxShadow='lg' p={8}>
+            {isError && (
+              <Text color='red.400' mb={3}>
+                {error.message}
+              </Text>
+            )}
+            <ReusableForm<LoginFormData>
+              fields={loginFields}
+              onSubmit={loginMutation}
+              submitButtonText='Sign in'
               isLoading={isPending}
-              width='full'
-              onClick={() => loginMutation({ email, password })}
-            >
-              {isPending ? 'Signing in...' : 'Sign in'}
-            </Button>
-            <Text fontSize='sm' color='text.muted' align='center'>
-              Don&apos;t have an account?{' '}
-              <ChakraLink as={Link} to='/signup'>
-                Sign up
+            />
+            <VStack mt={4} spacing={2} align='stretch'>
+              <ChakraLink as={Link} to='/password/forgot' fontSize='sm'>
+                Forgot password?
               </ChakraLink>
-            </Text>
-          </Stack>
-        </Box>
+              <Text fontSize='sm' color='text.muted'>
+                Don't have an account?{' '}
+                <ChakraLink as={Link} to='/register'>
+                  Sign up
+                </ChakraLink>
+              </Text>
+            </VStack>
+          </Box>
+        </VStack>
       </Container>
     </Flex>
   );
