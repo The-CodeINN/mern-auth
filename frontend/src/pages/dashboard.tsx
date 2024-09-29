@@ -1,5 +1,7 @@
+import Profile from '../components/profile';
+
 const Dashboard = () => {
-  return <div>Dashboard</div>;
+  return <Profile />;
 };
 
 export default Dashboard;

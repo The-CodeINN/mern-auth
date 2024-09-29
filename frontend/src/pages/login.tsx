@@ -9,7 +9,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useMutation } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { login } from '../lib/service';
 import ReusableForm, { FieldProps } from '../components/form';
 
@@ -37,6 +37,9 @@ const loginFields: FieldProps[] = [
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const redirectUrl = location.state?.redirectUrl || '/dashboard';
 
   const {
     mutate: loginMutation,
@@ -46,7 +49,7 @@ const Login: React.FC = () => {
   } = useMutation<unknown, Error, LoginFormData>({
     mutationFn: login,
     onSuccess: () => {
-      navigate('/dashboard', { replace: true });
+      navigate(redirectUrl, { replace: true });
     },
   });
 
